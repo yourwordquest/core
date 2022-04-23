@@ -51,7 +51,7 @@ func GetToken() (token string, err error) {
 		Headers: requests.Headers{
 			"Authorization": fmt.Sprintf("Basic %s:%s", username, password),
 		},
-		Payload: requests.Payload{
+		JSON: requests.Payload{
 			"graph":    graph,
 			"lifetime": "1800", // Token valid for 30 min
 		},

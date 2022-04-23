@@ -84,7 +84,7 @@ func (w *writer) Write() (err error) {
 
 	url := fmt.Sprintf("%s:9000/graph/%s", server, graph)
 	resp, err := requests.Request{
-		Payload: payload,
+		JSON: payload,
 		Headers: requests.Headers{
 			"gsql-atomic-level": "atomic",
 			"Authorization":     fmt.Sprintf("Bearer %s", token),
