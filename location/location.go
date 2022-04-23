@@ -4,6 +4,7 @@ import (
 	"github.com/yourwordquest/core/common"
 	"github.com/yourwordquest/core/db"
 	"github.com/yourwordquest/core/db/tigergraph"
+	"github.com/yourwordquest/core/utils"
 )
 
 type Location struct {
@@ -43,7 +44,7 @@ func (loc *Location) EsData() (id string, data map[string]interface{}) {
 		"id":             loc.Id,
 		"name":           loc.Name,
 		"code":           loc.Code,
-		"narrative":      policy.Sanitize(loc.Narrative),
+		"narrative":      utils.StripHTML(loc.Narrative),
 		"classification": loc.Classification,
 		"keywords":       keywords,
 	}
