@@ -26,7 +26,7 @@ func (loc Location) EsData() (id string, index string, data map[string]interface
 		"id":             loc.Id,
 		"name":           loc.Name,
 		"code":           loc.Code,
-		"narrative":      loc.Narrative,
+		"narrative":      policy.Sanitize(loc.Narrative),
 		"classification": loc.Classification,
 		"keywords":       keywords,
 	}
