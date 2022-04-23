@@ -66,4 +66,29 @@ func (loc *Location) TgData() (id string, data tigergraph.TigerGraphObject) {
 	return
 }
 
+type ChildLocation struct {
+	Parent string
+	Child  string
+}
+
+func (edge ChildLocation) SourceVertex() string {
+	return "Location"
+}
+
+func (edge ChildLocation) TargetVertex() string {
+	return "Location"
+}
+
+func (edge ChildLocation) EdgeType() string {
+	return "child_location"
+}
+
+func (edge ChildLocation) TgData() (source string, target string, data tigergraph.TigerGraphObject) {
+	source = edge.Parent
+	target = edge.Child
+	data = make(tigergraph.TigerGraphObject)
+	return
+}
+
+var _ tigergraph.TigerGraphEdge = new(ChildLocation)
 var _ db.MultiDatabaseEntity = new(Location)
