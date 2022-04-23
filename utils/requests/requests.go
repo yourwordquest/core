@@ -28,19 +28,25 @@ func (resp *Response) BindJSON(destination interface{}) error {
 
 type Request struct {
 	Method  string
-	Payload interface{}
+	Payload []byte
+	JSON    interface{}
 	Headers Headers
 }
 
 func (req Request) Send(url string, destination interface{}) (*Response, error) {
 	var payload io.Reader = nil
-	if req.Payload != nil {
-		jsonBytes, err := json.Marshal(req.Payload)
+	if req.JSON != nil {
+		jsonBytes, err := json.Marshal(req.JSON)
 		if err != nil {
 			return nil, err
-		} else {
-			payload = bytes.NewReader(jsonBytes)
 		}
+		if req.Headers == nil {
+			req.Headers = Headers{}
+		}
+		req.Headers["Content-Type"] = "application/json"
+		payload = bytes.NewReader(jsonBytes)
+	} else if req.Payload != nil {
+		payload = bytes.NewReader(req.Payload)
 	}
 
 	method := http.MethodGet
@@ -53,7 +59,6 @@ func (req Request) Send(url string, destination interface{}) (*Response, error) 
 		return nil, err
 	}
 
-	httpReq.Header.Set("Content-Type", "application/json")
 	if req.Headers != nil {
 		for key, value := range req.Headers {
 			httpReq.Header.Set(key, value)
