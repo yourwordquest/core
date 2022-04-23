@@ -7,14 +7,14 @@ import (
 	"github.com/yourwordquest/core/utils/requests"
 )
 
-type writer struct {
+type TigerGraphWriter struct {
 	vertices    map[string]vertexObject
 	edges       map[string]edgeObject
 	vertexCount int
 	edgeCount   int
 }
 
-func (w *writer) AddVertex(vertices ...TigerGraphVertex) *writer {
+func (w *TigerGraphWriter) AddVertex(vertices ...TigerGraphVertex) *TigerGraphWriter {
 	w.vertexCount += len(vertices)
 	for i := range vertices {
 		vertex := vertices[i]
@@ -30,7 +30,7 @@ func (w *writer) AddVertex(vertices ...TigerGraphVertex) *writer {
 	return w
 }
 
-func (w *writer) AddEdge(edges ...TigerGraphEdge) *writer {
+func (w *TigerGraphWriter) AddEdge(edges ...TigerGraphEdge) *TigerGraphWriter {
 	w.edgeCount += len(edges)
 	for i := range edges {
 		edge := edges[i]
@@ -64,7 +64,7 @@ func (w *writer) AddEdge(edges ...TigerGraphEdge) *writer {
 }
 
 // Write pushes all changes to TigerGraph, the changes will be upserted atomically
-func (w *writer) Write() (err error) {
+func (w *TigerGraphWriter) Write() (err error) {
 	if w.edgeCount == 0 && w.vertexCount == 0 {
 		return nil
 	}
@@ -99,15 +99,15 @@ func (w *writer) Write() (err error) {
 
 // DeferredWriter is used to write at the end of execution
 // This function panics if there's an error on write
-func (w *writer) DeferredWrite() {
+func (w *TigerGraphWriter) DeferredWrite() {
 	err := w.Write()
 	if err != nil {
 		panic(err)
 	}
 }
 
-func TigerGraphWriter() *writer {
-	return &writer{
+func NewWriter() *TigerGraphWriter {
+	return &TigerGraphWriter{
 		vertices:    make(map[string]vertexObject),
 		vertexCount: 0,
 		edges:       make(map[string]edgeObject),

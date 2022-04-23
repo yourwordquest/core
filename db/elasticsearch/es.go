@@ -9,11 +9,11 @@ import (
 	"github.com/yourwordquest/core/utils/requests"
 )
 
-type writer struct {
+type ElasticSearchWriter struct {
 	entries []string
 }
 
-func (w *writer) AddEntry(doc ElasticSearchDocument) *writer {
+func (w *ElasticSearchWriter) AddEntry(doc ElasticSearchDocument) *ElasticSearchWriter {
 	// Add a bul entry
 	id, data := doc.EsData()
 	indexBytes, _ := json.Marshal(map[string]map[string]string{
@@ -28,7 +28,7 @@ func (w *writer) AddEntry(doc ElasticSearchDocument) *writer {
 	return w
 }
 
-func (w *writer) Write() (err error) {
+func (w *ElasticSearchWriter) Write() (err error) {
 	// Last entry must be a new line
 	w.entries = append(w.entries, "")
 	payload := strings.Join(w.entries, "\n")
@@ -46,8 +46,17 @@ func (w *writer) Write() (err error) {
 	return
 }
 
-func Writer() *writer {
-	return &writer{
+// DeferredWriter is used to write at the end of execution
+// This function panics if there's an error on write
+func (w *ElasticSearchWriter) DeferredWrite() {
+	err := w.Write()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func NewWriter() *ElasticSearchWriter {
+	return &ElasticSearchWriter{
 		entries: make([]string, 0),
 	}
 }

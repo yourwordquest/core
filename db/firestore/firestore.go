@@ -19,22 +19,31 @@ func Get(id string, destination FirestoreDocument) (err error) {
 	return
 }
 
-type writer struct {
+type FirestoreWriter struct {
 	batch firestore.WriteBatch
 }
 
-func (w *writer) AddDoc(doc FirestoreDocument) {
+func (w *FirestoreWriter) AddDoc(doc FirestoreDocument) {
 	docRef := client.Doc(fmt.Sprintf("%s/%s", doc.Collection(), doc.Id()))
 	w.batch.Set(docRef, doc)
 }
 
-func (w *writer) Write() (err error) {
+func (w *FirestoreWriter) Write() (err error) {
 	_, err = w.batch.Commit(context.Background())
 	return
 }
 
-func Writer() *writer {
-	return &writer{
+// DeferredWriter is used to write at the end of execution
+// This function panics if there's an error on write
+func (w *FirestoreWriter) DeferredWrite() {
+	err := w.Write()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func NewWriter() *FirestoreWriter {
+	return &FirestoreWriter{
 		batch: *client.Batch(),
 	}
 }
