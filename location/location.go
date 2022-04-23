@@ -2,10 +2,12 @@ package location
 
 import (
 	"github.com/yourwordquest/core/common"
+	"github.com/yourwordquest/core/db"
+	"github.com/yourwordquest/core/db/tigergraph"
 )
 
 type Location struct {
-	Id             string           `firestore:"-,as_key"`
+	id             string
 	Name           string           `firestore:"name"`
 	Code           string           `firestore:"code"`
 	GovernmentType string           `firestore:"govType"`
@@ -16,10 +18,25 @@ type Location struct {
 	Classification string           `firestore:"classification"`
 }
 
-func (loc Location) EsData() (id string, index string, data map[string]interface{}) {
+func (loc *Location) Id() string {
+	return loc.id
+}
+
+func (loc *Location) SetId(id string) {
+	loc.id = id
+}
+
+func (loc *Location) Collection() string {
+	return "locations"
+}
+
+func (loc *Location) ESIndex() string {
+	return "searchable_locations"
+}
+
+func (loc *Location) EsData() (id string, data map[string]interface{}) {
 	// Return data that can be indexed to elastic search
-	id = loc.Id
-	index = "searchable_locations"
+	id = loc.id
 	keywords := loc.Other.Get("keywords", "")
 
 	data = map[string]interface{}{
@@ -33,9 +50,13 @@ func (loc Location) EsData() (id string, index string, data map[string]interface
 	return
 }
 
-func (loc Location) TgData() (id string, data map[string]interface{}) {
-	id = loc.Id
-	data = map[string]interface{}{
+func (loc *Location) TgVertex() string {
+	return "Location"
+}
+
+func (loc *Location) TgData() (id string, data tigergraph.TigerGraphObject) {
+	id = loc.id
+	data = tigergraph.TigerGraphObject{
 		"Name":           loc.Name,
 		"Code":           loc.Code,
 		"GovernmentType": loc.GovernmentType,
@@ -44,3 +65,5 @@ func (loc Location) TgData() (id string, data map[string]interface{}) {
 	}
 	return
 }
+
+var _ db.MultiDatabaseEntity = new(Location)
