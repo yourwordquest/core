@@ -1,0 +1,11 @@
+#!/usr/bin/bash
+
+# needed for auto tagging on github actions
+latest_tag(){
+    git -c 'versionsort.suffix=-' \
+        ls-remote --exit-code --refs --sort='version:refname' --tags $(git config --get remote.origin.url) '*.*.*' \
+        | tail --lines=1 \
+        | cut --delimiter='/' --fields=3
+}
+
+echo -n "$(latest_tag)"

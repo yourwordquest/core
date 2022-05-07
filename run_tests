@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Start docker compose in the background
+docker-compose -p echo-core-tests -f docker-compose.yml up -d > /dev/null 2>&1
+
+TEST_MODULE="./..."
+COVER_FILE="/dev/null"
+
+if [ -n "$1" ]; then
+  TEST_MODULE="./$1"
+fi
+
+if [ -n "$2" ]; then
+  COVER_FILE="./$2"
+fi
+
+export DATASTORE_EMULATOR_HOST="localhost:8124"
+export PUBSUB_EMULATOR_HOST="localhost:8538"
+export PROJECT_ID="local-gcloud-project"
+go test -v -race -coverprofile=$COVER_FILE -covermode=atomic $TEST_MODULE
+
+exit_status=$?
+
+# Stop docker compose - Don't stop in the background!
+docker-compose -p echo-core-tests -f docker-compose.yml down > /dev/null 2>&1
+
+exit $exit_status
