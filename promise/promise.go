@@ -3,21 +3,21 @@ package promise
 import (
 	"github.com/yourwordquest/core/common"
 	"github.com/yourwordquest/core/db"
-	"github.com/yourwordquest/core/db/tigergraph"
+	"github.com/yourwordquest/core/db/elasticsearch"
 	"github.com/yourwordquest/core/utils"
 )
 
 type Promise struct {
 	id                string
-	Summary           string
-	Details           string
-	PromisedOn        int64
-	ExpectedDelivery  int64
-	DeliveredOn       int64
-	AddedOn           int64
-	SupportingContent string
-	Status            string
-	OtherData         common.OtherData
+	Summary           string           `firestore:"Summary"`
+	Details           string           `firestore:"Details"`
+	PromisedOn        int64            `firestore:"PromisedOn"`
+	ExpectedDelivery  int64            `firestore:"ExpectedDelivery"`
+	DeliveredOn       int64            `firestore:"DeliveredOn"`
+	AddedOn           int64            `firestore:"AddedOn"`
+	SupportingContent string           `firestore:"SupportingContent"`
+	Status            string           `firestore:"Status"`
+	OtherData         common.OtherData `firestore:"OtherData"`
 }
 
 func (prom *Promise) Id() string {
@@ -29,7 +29,7 @@ func (prom *Promise) SetId(id string) {
 }
 
 func (prom *Promise) Collection() string {
-	return "promises"
+	return "Promises"
 }
 
 func (prom *Promise) ESIndex() string {
@@ -50,45 +50,5 @@ func (prom *Promise) EsData() (id string, data map[string]interface{}) {
 	return
 }
 
-func (prom *Promise) TgVertex() string {
-	return "Promise"
-}
-
-func (prom *Promise) TgData() (id string, data tigergraph.TigerGraphObject) {
-	id = prom.id
-	data = tigergraph.TigerGraphObject{
-		"PromisedOn":       prom.PromisedOn,
-		"ExpectedDelivery": prom.ExpectedDelivery,
-		"DeliveredOn":      prom.DeliveredOn,
-		"Status":           prom.Status,
-		"AddedOn":          prom.AddedOn,
-	}
-	return
-}
-
-type DependentPromise struct {
-	Parent string
-	Child  string
-}
-
-func (edge DependentPromise) SourceVertex() string {
-	return "Promise"
-}
-
-func (edge DependentPromise) TargetVertex() string {
-	return "Promise"
-}
-
-func (edge DependentPromise) EdgeType() string {
-	return "dependent_on"
-}
-
-func (edge DependentPromise) TgData() (source string, target string, data tigergraph.TigerGraphObject) {
-	source = edge.Child
-	target = edge.Parent
-	data = make(tigergraph.TigerGraphObject)
-	return
-}
-
-var _ tigergraph.TigerGraphEdge = new(DependentPromise)
-var _ db.MultiDatabaseEntity = new(Promise)
+var _ db.FirestoreDocument = new(Promise)
+var _ elasticsearch.ElasticSearchDocument = new(Promise)

@@ -3,20 +3,21 @@ package location
 import (
 	"github.com/yourwordquest/core/common"
 	"github.com/yourwordquest/core/db"
-	"github.com/yourwordquest/core/db/tigergraph"
+	"github.com/yourwordquest/core/db/elasticsearch"
 	"github.com/yourwordquest/core/utils"
 )
 
 type Location struct {
 	id             string
-	Name           string           `firestore:"name"`
-	Code           string           `firestore:"code"`
-	GovernmentType string           `firestore:"govType"`
-	Intro          string           `firestore:"intro"`
-	Narrative      string           `firestore:"narrative"`
-	Other          common.OtherData `firestore:"other"`
-	Status         string           `firestore:"status"`
-	Classification string           `firestore:"classification"`
+	Name           string           `firestore:"Name"`
+	Code           string           `firestore:"Code"`
+	GovernmentType string           `firestore:"GovType"`
+	Intro          string           `firestore:"Intro"`
+	Narrative      string           `firestore:"Narrative"`
+	Other          common.OtherData `firestore:"Other"`
+	Status         string           `firestore:"Status"`
+	Classification string           `firestore:"Classification"`
+	Parent         []string         `firestore:"Parent"`
 }
 
 func (loc *Location) Id() string {
@@ -28,7 +29,7 @@ func (loc *Location) SetId(id string) {
 }
 
 func (loc *Location) Collection() string {
-	return "locations"
+	return "Locations"
 }
 
 func (loc *Location) ESIndex() string {
@@ -51,22 +52,6 @@ func (loc *Location) EsData() (id string, data map[string]interface{}) {
 	return
 }
 
-func (loc *Location) TgVertex() string {
-	return "Location"
-}
-
-func (loc *Location) TgData() (id string, data tigergraph.TigerGraphObject) {
-	id = loc.id
-	data = tigergraph.TigerGraphObject{
-		"Name":           loc.Name,
-		"Code":           loc.Code,
-		"GovernmentType": loc.GovernmentType,
-		"Status":         loc.Status,
-		"Classification": loc.Classification,
-	}
-	return
-}
-
 type ChildLocation struct {
 	Parent string
 	Child  string
@@ -84,12 +69,5 @@ func (edge ChildLocation) EdgeType() string {
 	return "child_location"
 }
 
-func (edge ChildLocation) TgData() (source string, target string, data tigergraph.TigerGraphObject) {
-	source = edge.Parent
-	target = edge.Child
-	data = make(tigergraph.TigerGraphObject)
-	return
-}
-
-var _ tigergraph.TigerGraphEdge = new(ChildLocation)
-var _ db.MultiDatabaseEntity = new(Location)
+var _ db.FirestoreDocument = new(Location)
+var _ elasticsearch.ElasticSearchDocument = new(Location)
