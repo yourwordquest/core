@@ -1,11 +1,10 @@
 package location
 
 import (
-	"fmt"
-
 	"github.com/yourwordquest/core/common"
 	"github.com/yourwordquest/core/db"
 	"github.com/yourwordquest/core/db/es"
+	"github.com/yourwordquest/core/db/graph"
 	"github.com/yourwordquest/core/utils"
 )
 
@@ -54,35 +53,47 @@ func (loc *Location) EsData() (id string, data map[string]interface{}) {
 	return
 }
 
-func (loc *Location) GraphUpdate() (queries []string, params map[string]interface{}) {
-	params = map[string]interface{}{
-		"id":             loc.Id,
-		"name":           loc.Name,
-		"code":           loc.Code,
-		"gov_type":       loc.GovernmentType,
-		"status":         loc.Status,
-		"classification": loc.Classification,
+func (loc *Location) GraphUpdate() (entities []graph.GraphEntity) {
+	node := graph.GraphEntity{
+		Node: &graph.Node{
+			Id:   loc.id,
+			Name: "Location",
+		},
+		Data: map[string]interface{}{
+			"Name":           loc.Name,
+			"Code":           loc.Code,
+			"GovernmentType": loc.GovernmentType,
+			"Status":         loc.Status,
+			"Classification": loc.Classification,
+		},
 	}
-	queries = []string{
-		`MERGE (location:Location {Id: $id})
-		 SET location = {Id: $id, Name: $name, Code: $code, GovernmentType: $gov_type, Status: $status, Classification: $classification}
-		`,
-	}
+	entities = []graph.GraphEntity{node}
 
 	for i := range loc.Parents {
-		parent_key := fmt.Sprintf("parent_%v", i)
-		params[parent_key] = loc.Parents[i]
-		query := fmt.Sprintf(`
-			MATCH
-				(child_location:Location {Id: $id}),
-				(parent_location:Location {Id: $%s})
-			MERGE (child_location)-[cr:child_location_of]->(parent_location)
-			MERGE (parent_location)-[pr:parent_location_of]->(child_location)
-		`, parent_key)
-		queries = append(queries, query)
+		child_edge := graph.GraphEntity{
+			Edge: &graph.Edge{
+				Name:          "child_location_of",
+				Source:        "Location",
+				SourceId:      loc.Parents[i],
+				Destination:   "Location",
+				DestinationId: loc.id,
+			},
+		}
+		parent_edge := graph.GraphEntity{
+			Edge: &graph.Edge{
+				Name:          "parent_location_of",
+				Source:        "Location",
+				SourceId:      loc.id,
+				Destination:   "Location",
+				DestinationId: loc.Parents[i],
+			},
+		}
+
+		entities = append(entities, child_edge, parent_edge)
 	}
 	return
 }
 
 var _ db.FirestoreDocument = new(Location)
 var _ es.ElasticSearchDocument = new(Location)
+var _ graph.Neo4JDocument = new(Location)
