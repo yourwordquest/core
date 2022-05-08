@@ -5,7 +5,7 @@ import (
 
 	"github.com/yourwordquest/core/common"
 	"github.com/yourwordquest/core/db"
-	"github.com/yourwordquest/core/db/elasticsearch"
+	"github.com/yourwordquest/core/db/es"
 	"github.com/yourwordquest/core/utils"
 )
 
@@ -54,7 +54,7 @@ func (loc *Location) EsData() (id string, data map[string]interface{}) {
 	return
 }
 
-func (loc *Location) GraphData() (queries []string, params map[string]interface{}) {
+func (loc *Location) GraphUpdate() (queries []string, params map[string]interface{}) {
 	params = map[string]interface{}{
 		"id":             loc.Id,
 		"name":           loc.Name,
@@ -85,4 +85,4 @@ func (loc *Location) GraphData() (queries []string, params map[string]interface{
 }
 
 var _ db.FirestoreDocument = new(Location)
-var _ elasticsearch.ElasticSearchDocument = new(Location)
+var _ es.ElasticSearchDocument = new(Location)

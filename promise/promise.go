@@ -3,7 +3,7 @@ package promise
 import (
 	"github.com/yourwordquest/core/common"
 	"github.com/yourwordquest/core/db"
-	"github.com/yourwordquest/core/db/elasticsearch"
+	"github.com/yourwordquest/core/db/es"
 	"github.com/yourwordquest/core/utils"
 )
 
@@ -51,4 +51,4 @@ func (prom *Promise) EsData() (id string, data map[string]interface{}) {
 }
 
 var _ db.FirestoreDocument = new(Promise)
-var _ elasticsearch.ElasticSearchDocument = new(Promise)
+var _ es.ElasticSearchDocument = new(Promise)

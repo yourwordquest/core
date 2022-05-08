@@ -1,4 +1,4 @@
-package elasticsearch
+package es
 
 type ElasticSearchDocument interface {
 	ESIndex() string
