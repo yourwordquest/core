@@ -17,7 +17,7 @@ type Location struct {
 	Other          common.OtherData `firestore:"Other"`
 	Status         string           `firestore:"Status"`
 	Classification string           `firestore:"Classification"`
-	Parent         []string         `firestore:"Parent"`
+	Parents        []string         `firestore:"Parents"`
 }
 
 func (loc *Location) Id() string {
@@ -52,21 +52,24 @@ func (loc *Location) EsData() (id string, data map[string]interface{}) {
 	return
 }
 
-type ChildLocation struct {
-	Parent string
-	Child  string
-}
+func (loc *Location) GraphData() (queries []string, params map[string]interface{}) {
+	params = map[string]interface{}{
+		"id":             loc.Id,
+		"name":           loc.Name,
+		"code":           loc.Code,
+		"gov_type":       loc.GovernmentType,
+		"status":         loc.Status,
+		"classification": loc.Classification,
+	}
+	queries = []string{
+		"CREATE ($id:Location {Name: $name, Code: $code, GovernmentType: $gov_type, Status: $status, Classification: $classification})",
+	}
 
-func (edge ChildLocation) SourceVertex() string {
-	return "Location"
-}
-
-func (edge ChildLocation) TargetVertex() string {
-	return "Location"
-}
-
-func (edge ChildLocation) EdgeType() string {
-	return "child_location"
+	for i := range loc.Parents {
+		parent := loc.Parents[i]
+		queries = append(queries)
+	}
+	return
 }
 
 var _ db.FirestoreDocument = new(Location)
