@@ -1,6 +1,8 @@
 package location
 
 import (
+	"fmt"
+
 	"github.com/yourwordquest/core/common"
 	"github.com/yourwordquest/core/db"
 	"github.com/yourwordquest/core/db/elasticsearch"
@@ -62,12 +64,22 @@ func (loc *Location) GraphData() (queries []string, params map[string]interface{
 		"classification": loc.Classification,
 	}
 	queries = []string{
-		"CREATE ($id:Location {Name: $name, Code: $code, GovernmentType: $gov_type, Status: $status, Classification: $classification})",
+		`MERGE (location:Location {Id: $id})
+		 SET location = {Id: $id, Name: $name, Code: $code, GovernmentType: $gov_type, Status: $status, Classification: $classification}
+		`,
 	}
 
 	for i := range loc.Parents {
-		parent := loc.Parents[i]
-		queries = append(queries)
+		parent_key := fmt.Sprintf("parent_%v", i)
+		params[parent_key] = loc.Parents[i]
+		query := fmt.Sprintf(`
+			MATCH
+				(child_location:Location {Id: $id}),
+				(parent_location:Location {Id: $%s})
+			MERGE (child_location)-[cr:child_location_of]->(parent_location)
+			MERGE (parent_location)-[pr:parent_location_of]->(child_location)
+		`, parent_key)
+		queries = append(queries, query)
 	}
 	return
 }
